@@ -1,7 +1,10 @@
 export let activeEffect: ReactiveEffect | null
 
 export class ReactiveEffect {
-  constructor(private fn: Function) {}
+  constructor(
+    private fn: Function,
+    public scheduler?: Function | undefined,
+  ) {}
 
   run() {
     activeEffect = this
@@ -9,8 +12,12 @@ export class ReactiveEffect {
   }
 }
 
-export function effect(fn: Function) {
-  const effect = new ReactiveEffect(fn)
+interface EffectOption {
+  scheduler?: Function
+}
+
+export function effect(fn: Function, options?: EffectOption) {
+  const effect = new ReactiveEffect(fn, options?.scheduler)
 
   effect.run()
 
@@ -52,6 +59,10 @@ export function trigger(target, key) {
   }
 
   for (const effect of deps) {
-    effect.run()
+    if (effect.scheduler) {
+      effect.scheduler()
+    } else {
+      effect.run()
+    }
   }
 }

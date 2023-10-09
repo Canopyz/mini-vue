@@ -33,4 +33,30 @@ describe('effect', () => {
     expect(foo).toBe(12)
     expect(runner()).toBe(13)
   })
+
+  it('scheduler', () => {
+    let foo = 0,
+      bar = 0
+    const obj = reactive({
+      age: 10,
+    })
+    const scheduler = jest.fn(() => {
+      foo = obj.age
+    })
+    const runner = effect(
+      () => {
+        bar = obj.age
+      },
+      { scheduler },
+    )
+    expect(foo).toBe(0)
+    expect(bar).toBe(10)
+
+    obj.age++
+    expect(foo).toBe(11)
+    expect(bar).toBe(10)
+
+    runner()
+    expect(bar).toBe(11)
+  })
 })
