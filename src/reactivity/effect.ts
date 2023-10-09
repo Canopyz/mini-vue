@@ -5,7 +5,7 @@ export class ReactiveEffect {
 
   run() {
     activeEffect = this
-    this.fn()
+    return this.fn()
   }
 }
 
@@ -13,6 +13,9 @@ export function effect(fn: Function) {
   const effect = new ReactiveEffect(fn)
 
   effect.run()
+
+  const runner = effect.run.bind(effect)
+  return runner
 }
 
 const targetMap = new Map()
