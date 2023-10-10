@@ -1,4 +1,4 @@
-import { readonly } from '../reactive'
+import { isReadonly, readonly } from '../reactive'
 
 describe('readonly', () => {
   it('should get the same result', () => {
@@ -17,5 +17,13 @@ describe('readonly', () => {
 
     user.age = 11
     expect(console.warn).toHaveBeenCalled()
+  })
+
+  test('isReadonly', () => {
+    const raw = { foo: 1 }
+    const wrapped = readonly(raw)
+
+    expect(isReadonly(wrapped)).toBe(true)
+    expect(isReadonly(raw)).toBe(false)
   })
 })
