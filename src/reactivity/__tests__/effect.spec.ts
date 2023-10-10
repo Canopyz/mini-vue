@@ -1,4 +1,4 @@
-import { effect } from '../effect'
+import { effect, stop } from '../effect'
 import { reactive } from '../reactive'
 
 describe('effect', () => {
@@ -58,5 +58,37 @@ describe('effect', () => {
 
     runner()
     expect(bar).toBe(11)
+  })
+
+  it('shoud support stop', () => {
+    const obj = reactive({ age: 10 })
+
+    let foo
+
+    const runner = effect(() => {
+      foo = obj.age
+    })
+
+    expect(foo).toBe(10)
+
+    stop(runner)
+
+    obj.age = 11
+    expect(foo).toBe(10)
+
+    runner()
+    expect(foo).toBe(11)
+  })
+
+  it('should support onStop', () => {
+    const onStop = jest.fn()
+
+    const runner = effect(() => {}, { onStop })
+
+    stop(runner)
+    expect(onStop).toBeCalledTimes(1)
+
+    stop(runner)
+    expect(onStop).toBeCalledTimes(1)
   })
 })

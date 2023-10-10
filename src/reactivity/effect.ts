@@ -1,6 +1,12 @@
+import { extend } from '../shared/index'
+
 export let activeEffect: ReactiveEffect | null
 
 export class ReactiveEffect {
+  deps: Set<ReactiveEffect>[] = []
+  private active = true
+  private onStop?: () => void
+
   constructor(
     private fn: Function,
     public scheduler?: Function | undefined,
@@ -10,18 +16,43 @@ export class ReactiveEffect {
     activeEffect = this
     return this.fn()
   }
+
+  stop() {
+    if (this.active) {
+      cleanUpEffects(this)
+      if (this.onStop) {
+        this.onStop()
+      }
+      this.active = false
+    }
+  }
+}
+
+function cleanUpEffects(effect: ReactiveEffect) {
+  effect.deps.forEach((dep) => {
+    dep.delete(effect)
+  })
 }
 
 interface EffectOption {
   scheduler?: Function
+  onStop?: () => void
+}
+
+export interface ReactiveEffectRunner<T = any> {
+  (): T
+  effect: ReactiveEffect
 }
 
 export function effect(fn: Function, options?: EffectOption) {
   const effect = new ReactiveEffect(fn, options?.scheduler)
+  extend(effect, options)
 
   effect.run()
 
-  const runner = effect.run.bind(effect)
+  const runner = effect.run.bind(effect) as ReactiveEffectRunner
+  runner.effect = effect
+
   return runner
 }
 
@@ -42,6 +73,7 @@ export function track(target, key) {
 
   if (activeEffect) {
     deps.add(activeEffect)
+    activeEffect.deps.push(deps)
   }
 }
 
@@ -65,4 +97,8 @@ export function trigger(target, key) {
       effect.run()
     }
   }
+}
+
+export function stop(runner: ReactiveEffectRunner) {
+  runner.effect?.stop()
 }
