@@ -1,6 +1,11 @@
 import { extend } from '../shared/index'
 
-export let activeEffect: ReactiveEffect | null
+export let activeEffect: ReactiveEffect | null = null
+export let shouldTrack = true
+
+export function isTracking() {
+  return activeEffect !== null && shouldTrack
+}
 
 export class ReactiveEffect {
   deps: Set<ReactiveEffect>[] = []
@@ -13,8 +18,16 @@ export class ReactiveEffect {
   ) {}
 
   run() {
+    if (!this.active) {
+      return this.fn()
+    }
+
     activeEffect = this
-    return this.fn()
+    shouldTrack = true
+    const res = this.fn()
+    shouldTrack = false
+
+    return res
   }
 
   stop() {
@@ -32,6 +45,8 @@ function cleanUpEffects(effect: ReactiveEffect) {
   effect.deps.forEach((dep) => {
     dep.delete(effect)
   })
+
+  effect.deps.length = 0
 }
 
 interface EffectOption {
@@ -59,6 +74,10 @@ export function effect(fn: Function, options?: EffectOption) {
 const targetMap = new Map()
 
 export function track(target, key) {
+  if (!isTracking()) {
+    return
+  }
+
   let depsMap = targetMap.get(target)
   if (!depsMap) {
     depsMap = new Map()
@@ -71,7 +90,8 @@ export function track(target, key) {
     depsMap.set(key, deps)
   }
 
-  if (activeEffect) {
+  activeEffect = activeEffect!
+  if (!deps.has(activeEffect)) {
     deps.add(activeEffect)
     activeEffect.deps.push(deps)
   }

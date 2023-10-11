@@ -76,8 +76,11 @@ describe('effect', () => {
     obj.age = 11
     expect(foo).toBe(10)
 
+    obj.age++
+    expect(foo).toBe(10)
+
     runner()
-    expect(foo).toBe(11)
+    expect(foo).toBe(12)
   })
 
   it('should support onStop', () => {
