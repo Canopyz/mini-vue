@@ -1,4 +1,4 @@
-import { isReadonly, readonly } from '../reactive'
+import { isReadonly, readonly, shallowReadonly } from '../reactive'
 
 describe('readonly', () => {
   it('should get the same result', () => {
@@ -25,5 +25,20 @@ describe('readonly', () => {
 
     expect(isReadonly(wrapped)).toBe(true)
     expect(isReadonly(raw)).toBe(false)
+  })
+
+  test('nested readonly', () => {
+    const original = { foo: { bar: { a: 1 } } }
+    const wrapped = readonly(original)
+    expect(isReadonly(wrapped.foo)).toBe(true)
+    expect(isReadonly(wrapped.foo.bar)).toBe(true)
+    expect(isReadonly(wrapped.foo.bar.a)).toBe(false)
+  })
+
+  test('shallowReadonly', () => {
+    const raw = { foo: { bar: 1 } }
+    const wrapped = shallowReadonly(raw)
+    expect(isReadonly(wrapped)).toBe(true)
+    expect(isReadonly(wrapped.foo)).toBe(false)
   })
 })

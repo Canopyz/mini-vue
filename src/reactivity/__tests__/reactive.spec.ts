@@ -1,4 +1,4 @@
-import { isReactive, reactive } from '../reactive'
+import { isProxy, isReactive, reactive, readonly } from '../reactive'
 
 describe('reactive', () => {
   it('should return the same value', () => {
@@ -35,5 +35,14 @@ describe('reactive', () => {
     expect(isReactive(nested.foo.bar.val)).toBe(false)
     expect(isReactive(nested.arr)).toBe(true)
     expect(isReactive(nested.arr[0])).toBe(true)
+  })
+
+  test('isProxy', () => {
+    const raw = { foo: 1 }
+    const reactiveWrapper = reactive(raw)
+    expect(isProxy(reactiveWrapper)).toBe(true)
+
+    const readonlyWrapper = readonly(raw)
+    expect(isProxy(readonlyWrapper)).toBe(true)
   })
 })
