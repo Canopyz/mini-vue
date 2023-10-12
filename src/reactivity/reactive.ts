@@ -1,3 +1,4 @@
+import { isObject } from '../shared'
 import {
   mutableHandler,
   readonlyHandler,
@@ -23,6 +24,10 @@ export function shallowReadonly(raw: any) {
 
 function createReactiveObject(raw: any, baseHandler: ProxyHandler<any>) {
   return new Proxy(raw, baseHandler)
+}
+
+export function toReactive<T = any>(value: T): T {
+  return isObject(value) ? reactive(value) : value
 }
 
 export function isReactive(value: any) {

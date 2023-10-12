@@ -73,6 +73,14 @@ export function effect(fn: Function, options?: EffectOption) {
 
 const targetMap = new Map()
 
+export function trackEffects(deps: Set<ReactiveEffect>) {
+  activeEffect = activeEffect!
+  if (!deps.has(activeEffect)) {
+    deps.add(activeEffect)
+    activeEffect.deps.push(deps)
+  }
+}
+
 export function track(target, key) {
   if (!isTracking()) {
     return
@@ -90,10 +98,16 @@ export function track(target, key) {
     depsMap.set(key, deps)
   }
 
-  activeEffect = activeEffect!
-  if (!deps.has(activeEffect)) {
-    deps.add(activeEffect)
-    activeEffect.deps.push(deps)
+  trackEffects(deps)
+}
+
+export function triggerEffects(deps: Set<ReactiveEffect>) {
+  for (const effect of deps) {
+    if (effect.scheduler) {
+      effect.scheduler()
+    } else {
+      effect.run()
+    }
   }
 }
 
@@ -110,13 +124,7 @@ export function trigger(target, key) {
     return
   }
 
-  for (const effect of deps) {
-    if (effect.scheduler) {
-      effect.scheduler()
-    } else {
-      effect.run()
-    }
-  }
+  triggerEffects(deps)
 }
 
 export function stop(runner: ReactiveEffectRunner) {
