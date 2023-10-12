@@ -22,10 +22,13 @@ export class ReactiveEffect {
       return this.fn()
     }
 
+    let parent = activeEffect
     activeEffect = this
+    const lastShouldTrack = shouldTrack
     shouldTrack = true
     const res = this.fn()
-    shouldTrack = false
+    shouldTrack = lastShouldTrack
+    activeEffect = parent
 
     return res
   }

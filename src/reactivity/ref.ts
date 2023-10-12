@@ -16,7 +16,7 @@ export type MaybeRef<T = any> = Ref<T> | T
 export class RefImpl<T> {
   private _value: T
   private _rawValue: T
-  private deps: Set<ReactiveEffect> = new Set()
+  public deps: Set<ReactiveEffect> = new Set()
   public readonly __v_isRef = true
   constructor(value: T) {
     this._value = toReactive(value)
@@ -24,9 +24,7 @@ export class RefImpl<T> {
   }
 
   get value() {
-    if (isTracking()) {
-      trackEffects(this.deps)
-    }
+    trackRefEffects(this)
     return this._value
   }
 
@@ -34,9 +32,19 @@ export class RefImpl<T> {
     if (hasChanged(newValue, this._rawValue)) {
       this._rawValue = newValue
       this._value = toReactive(newValue)
-      triggerEffects(this.deps)
+      triggerRefEffects(this)
     }
   }
+}
+
+export function trackRefEffects(ref: any) {
+  if (isTracking()) {
+    trackEffects(ref.deps)
+  }
+}
+
+export function triggerRefEffects(ref: any) {
+  triggerEffects(ref.deps)
 }
 
 export function ref<T = any>(value: T): Ref<T> {
