@@ -30,7 +30,7 @@ export function toReactive<T = any>(value: T): T {
   return isObject(value) ? reactive(value) : value
 }
 
-export function isReactive(value: any) {
+export function isReactive(value: any): boolean {
   return !!value[ReactiveFlags.REACTIVE]
 }
 

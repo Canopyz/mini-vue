@@ -1,6 +1,6 @@
 import { effect } from '../effect'
 import { reactive } from '../reactive'
-import { isRef, ref, unRef } from '../ref'
+import { isRef, proxyRefs, ref, unRef } from '../ref'
 
 describe('ref', () => {
   it('should hold a value', () => {
@@ -51,5 +51,18 @@ describe('ref', () => {
     expect(isRef(unRef(a))).toBe(false)
     expect(unRef(a)).toBe(1)
     expect(unRef(1)).toBe(1)
+  })
+
+  test('proxyRefs', () => {
+    const user = proxyRefs({
+      age: ref(10),
+      name: 'xiaoming',
+    })
+    expect(user.age).toBe(10)
+    expect(isRef(user.name)).toBe(false)
+
+    user.age = 11
+    expect(user.age).toBe(11)
+    expect(isRef(user.age)).toBe(false)
   })
 })

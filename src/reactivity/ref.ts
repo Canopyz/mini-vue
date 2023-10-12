@@ -5,7 +5,7 @@ import {
   trackEffects,
   triggerEffects,
 } from './effect'
-import { toReactive } from './reactive'
+import { isReactive, toReactive } from './reactive'
 
 export interface Ref<T = any> {
   value: T
@@ -49,4 +49,21 @@ export function isRef(ref: any): ref is Ref {
 
 export function unRef<T>(ref: MaybeRef<T>): T {
   return isRef(ref) ? ref.value : ref
+}
+
+export function proxyRefs<T extends object>(objectWithRefs: T): any {
+  return isReactive(objectWithRefs)
+    ? objectWithRefs
+    : new Proxy(objectWithRefs, {
+        get(target, key) {
+          return unRef(Reflect.get(target, key))
+        },
+        set(target, key, value) {
+          if (isRef(target[key] && !isRef(value))) {
+            target[key].value = value
+            return true
+          }
+          return Reflect.set(target, key, value)
+        },
+      })
 }
