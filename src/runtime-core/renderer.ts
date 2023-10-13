@@ -20,7 +20,7 @@ function processText(vnode: any, container: any) {
 }
 
 function processElement(vnode: any, container: any) {
-  const el = document.createElement(vnode.type)
+  const el = (vnode.el = document.createElement(vnode.type))
 
   if (vnode.props) {
     for (const key in vnode.props) {
@@ -58,7 +58,11 @@ function mountComponent(vnode: any, container: any) {
 }
 
 function setupRenderEffect(instance: any, container: any) {
-  const subTree = instance.render()
+  const { proxy } = instance
+
+  const subTree = instance.render.call(proxy)
 
   patch(subTree, container)
+
+  instance.vnode.el = subTree.el
 }
