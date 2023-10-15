@@ -1,6 +1,8 @@
 import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
 
+const nativeOnRE = /^on[A-Z]/
+
 export function render(vnode: any, container: any) {
   patch(vnode, container)
 }
@@ -36,7 +38,12 @@ function mountElement(vnode: any, container: any) {
   if (vnode.props) {
     for (const key in vnode.props) {
       const value = vnode.props[key]
-      el.setAttribute(key, value)
+
+      if (nativeOnRE.test(key)) {
+        el.addEventListener(key.slice(2).toLowerCase(), value)
+      } else {
+        el.setAttribute(key, value)
+      }
     }
   }
 

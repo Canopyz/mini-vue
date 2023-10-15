@@ -11,6 +11,9 @@ export const App = {
       {
         id: 'root',
         class: ['red', 'hard'],
+        onClick: () => {
+          console.log('click')
+        },
       },
       [h('h1', null, this.msg), h('p', null, 'Hello World')],
     )
