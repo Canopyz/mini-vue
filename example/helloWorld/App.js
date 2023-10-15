@@ -6,8 +6,6 @@ export const App = {
     return { msg: 'Hello Vue 3!' }
   },
   render() {
-    window.self = this
-    console.log(this)
     return h(
       'div',
       {
