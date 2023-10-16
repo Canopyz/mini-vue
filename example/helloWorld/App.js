@@ -1,8 +1,9 @@
 import { h } from '../../lib/mini-vue.esm.js'
+import { Test } from './Test.js'
 
 window.self = null
 export const App = {
-  setup() {
+  setup(props) {
     return { msg: 'Hello Vue 3!' }
   },
   render() {
@@ -15,7 +16,7 @@ export const App = {
           console.log('click')
         },
       },
-      [h('h1', null, this.msg), h('p', null, 'Hello World')],
+      [h(Test, { message: this.msg }, null)],
     )
   },
 }

@@ -23,6 +23,11 @@ export function shallowReadonly(raw: any) {
 }
 
 function createReactiveObject(raw: any, baseHandler: ProxyHandler<any>) {
+  if (!isObject(raw)) {
+    console.warn(`value cannot be made reactive: ${String(raw)}`)
+    return raw
+  }
+
   return new Proxy(raw, baseHandler)
 }
 

@@ -4,7 +4,7 @@ import { render } from './renderer'
 export function createApp(rootComponent: any) {
   return {
     mount(rootContainer: any) {
-      const vnode = createVNode(rootComponent)
+      const vnode = createVNode(rootComponent, null)
 
       render(vnode, rootContainer)
     },
