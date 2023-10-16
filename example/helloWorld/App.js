@@ -12,11 +12,23 @@ export const App = {
       {
         id: 'root',
         class: ['red', 'hard'],
-        onClick: () => {
-          console.log('click')
-        },
       },
-      [h(Test, { message: this.msg }, null)],
+      [
+        h(
+          Test,
+          {
+            message: this.msg,
+
+            onChange: (a) => {
+              console.log('onChange', a)
+            },
+            onFooBar: (a, b) => {
+              console.log('onFooBar', a, b)
+            },
+          },
+          null,
+        ),
+      ],
     )
   },
 }
