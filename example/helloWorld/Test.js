@@ -1,4 +1,4 @@
-import { h } from '../../lib/mini-vue.esm.js'
+import { h, renderSlots } from '../../lib/mini-vue.esm.js'
 
 export const Test = {
   setup(props, { emit }) {
@@ -9,6 +9,10 @@ export const Test = {
     return { emitTest }
   },
   render() {
-    return h('button', { onClick: this.emitTest }, 'button')
+    return h('div', {}, [
+      renderSlots(this.$slots, 'test', { message: 'scoped' }),
+      h('button', { onClick: this.emitTest }, 'button'),
+      renderSlots(this.$slots, 'default', null),
+    ])
   },
 }

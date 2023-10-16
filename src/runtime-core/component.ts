@@ -3,6 +3,7 @@ import { isObject } from '../shared'
 import { emit } from './componentEmits'
 import { initProps } from './componentProps'
 import { publicInstanceProxyHandler } from './componentPublicInstance'
+import { initSlots } from './componentSlots'
 
 export function createComponentInstance(vnode: any) {
   const component = {
@@ -11,6 +12,7 @@ export function createComponentInstance(vnode: any) {
     setupState: {},
     props: {},
     emit: () => {},
+    slots: {},
   }
 
   component.emit = emit.bind(null, component) as any
@@ -20,7 +22,7 @@ export function createComponentInstance(vnode: any) {
 
 export function setupComponent(instance: any) {
   initProps(instance, instance.vnode.props)
-  // initSlots()
+  initSlots(instance, instance.vnode.children)
   setupStatefulComponent(instance)
 }
 

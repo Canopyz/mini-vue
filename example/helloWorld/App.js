@@ -26,7 +26,10 @@ export const App = {
               console.log('onFooBar', a, b)
             },
           },
-          null,
+          {
+            default: () => h('div', {}, 'default'),
+            test: ({ message }) => message,
+          },
         ),
       ],
     )
