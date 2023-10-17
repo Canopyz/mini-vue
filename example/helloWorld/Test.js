@@ -29,7 +29,7 @@ export const Test = {
       renderSlots(this.$slots, 'test', { message: 'scoped' }),
       h('button', { onClick: this.emitTest }, [createTextVNode('button')]),
       renderSlots(this.$slots, 'default', null),
-      createFragment('test'),
+      createFragment([createTextVNode('test')]),
     ])
   },
 }
