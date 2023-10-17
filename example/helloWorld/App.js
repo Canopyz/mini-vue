@@ -2,12 +2,18 @@ import {
   createTextVNode,
   h,
   getCurrentInstance,
+  provide,
+  inject,
 } from '../../lib/mini-vue.esm.js'
 import { Test } from './Test.js'
 
 export const App = {
   setup(props) {
     console.log(getCurrentInstance())
+    provide('foo', 1)
+    provide('bar', 2)
+    const foo = inject('foo')
+    console.log('parent foo', foo)
     return { msg: 'Hello Vue 3!' }
   },
   render() {
