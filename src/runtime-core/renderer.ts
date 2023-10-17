@@ -9,13 +9,11 @@ export function render(vnode: any, container: any) {
 }
 
 export function patch(vnode: any, container: any) {
-  console.log(vnode.type)
   switch (vnode.type) {
     case Fragment:
       processFragment(vnode, container)
       break
     case Text:
-      console.log(1)
       processText(vnode, container)
       break
     default:

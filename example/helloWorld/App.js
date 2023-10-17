@@ -1,8 +1,13 @@
-import { createTextVNode, h } from '../../lib/mini-vue.esm.js'
+import {
+  createTextVNode,
+  h,
+  getCurrentInstance,
+} from '../../lib/mini-vue.esm.js'
 import { Test } from './Test.js'
 
 export const App = {
   setup(props) {
+    console.log(getCurrentInstance())
     return { msg: 'Hello Vue 3!' }
   },
   render() {

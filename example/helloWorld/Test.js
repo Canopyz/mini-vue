@@ -3,10 +3,12 @@ import {
   renderSlots,
   createTextVNode,
   createFragment,
+  getCurrentInstance,
 } from '../../lib/mini-vue.esm.js'
 
 export const Test = {
   setup(props, { emit }) {
+    console.log(getCurrentInstance())
     const emitTest = () => {
       emit('change', 'hello')
       emit('foo-bar', 1, 2)
