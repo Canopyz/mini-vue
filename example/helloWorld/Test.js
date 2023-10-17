@@ -1,4 +1,9 @@
-import { h, renderSlots } from '../../lib/mini-vue.esm.js'
+import {
+  h,
+  renderSlots,
+  createTextVNode,
+  createFragment,
+} from '../../lib/mini-vue.esm.js'
 
 export const Test = {
   setup(props, { emit }) {
@@ -11,8 +16,9 @@ export const Test = {
   render() {
     return h('div', {}, [
       renderSlots(this.$slots, 'test', { message: 'scoped' }),
-      h('button', { onClick: this.emitTest }, 'button'),
+      h('button', { onClick: this.emitTest }, [createTextVNode('button')]),
       renderSlots(this.$slots, 'default', null),
+      createFragment('test'),
     ])
   },
 }

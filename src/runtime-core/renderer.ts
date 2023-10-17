@@ -1,5 +1,6 @@
 import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
+import { Fragment, Text } from './vnode'
 
 const nativeOnRE = /^on[A-Z]/
 
@@ -8,24 +9,36 @@ export function render(vnode: any, container: any) {
 }
 
 export function patch(vnode: any, container: any) {
-  if (typeof vnode === 'string') {
-    processText(vnode, container)
-  } else {
-    if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
-      processElement(vnode, container)
-    } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-      processComponent(vnode, container)
-    }
+  console.log(vnode.type)
+  switch (vnode.type) {
+    case Fragment:
+      processFragment(vnode, container)
+      break
+    case Text:
+      console.log(1)
+      processText(vnode, container)
+      break
+    default:
+      if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
+        processElement(vnode, container)
+      } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        processComponent(vnode, container)
+      }
+  }
+}
+
+function processFragment(vnode: any, container: any) {
+  if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+    container.append(vnode.children)
+  } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    mountChildren(vnode, container)
   }
 }
 
 function processText(vnode: any, container: any) {
-  insertText(vnode, container)
-}
-
-function insertText(vnode: any, container: any) {
-  const textContainer = document.createTextNode(vnode)
-  container.appendChild(textContainer)
+  const { children } = vnode
+  const textNode = (vnode.el = document.createTextNode(children))
+  container.append(textNode)
 }
 
 function processElement(vnode: any, container: any) {
@@ -49,7 +62,7 @@ function mountElement(vnode: any, container: any) {
 
   if (vnode.children) {
     if (vnode.shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      processText(vnode.children, el)
+      el.textContent = vnode.children
     } else if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(vnode, el)
     }

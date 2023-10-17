@@ -1,7 +1,6 @@
-import { h } from '../../lib/mini-vue.esm.js'
+import { createTextVNode, h } from '../../lib/mini-vue.esm.js'
 import { Test } from './Test.js'
 
-window.self = null
 export const App = {
   setup(props) {
     return { msg: 'Hello Vue 3!' }
@@ -27,10 +26,11 @@ export const App = {
             },
           },
           {
-            default: () => h('div', {}, 'default'),
-            test: ({ message }) => message,
+            default: () => [h('div', {}, [createTextVNode('default')])],
+            test: ({ message }) => createTextVNode(message),
           },
         ),
+        h('div', {}, [createTextVNode('text')]),
       ],
     )
   },
