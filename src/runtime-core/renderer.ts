@@ -1,3 +1,4 @@
+import { effect } from '../reactivity'
 import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
 import { createAppAPI } from './createApp'
@@ -13,39 +14,49 @@ export function createRenderer(options: any) {
   } = options
 
   function render(vnode: any, container: any) {
-    patch(vnode, container, null)
+    patch(null, vnode, container, null)
   }
 
-  function patch(vnode: any, container: any, parentComponent: any) {
-    switch (vnode.type) {
+  function patch(n1: any, n2: any, container: any, parentComponent: any) {
+    switch (n2.type) {
       case Fragment:
-        processFragment(vnode, container, parentComponent)
+        processFragment(n1, n2, container, parentComponent)
         break
       case Text:
-        processText(vnode, container)
+        processText(n1, n2, container)
         break
       default:
-        if (vnode.shapeFlag & ShapeFlags.ELEMENT) {
-          processElement(vnode, container, parentComponent)
-        } else if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-          processComponent(vnode, container, parentComponent)
+        if (n2.shapeFlag & ShapeFlags.ELEMENT) {
+          processElement(n1, n2, container, parentComponent)
+        } else if (n2.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+          processComponent(n1, n2, container, parentComponent)
         }
     }
   }
 
-  function processFragment(vnode: any, container: any, parentComponent: any) {
-    if (vnode.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(vnode, container, parentComponent)
+  function processFragment(n1, n2: any, container: any, parentComponent: any) {
+    if (n2.shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      mountChildren(n2, container, parentComponent)
     }
   }
 
-  function processText(vnode: any, container: any) {
-    const { children } = vnode
+  function processText(n1, n2: any, container: any) {
+    const { children } = n2
     hostInsert(hostCreateText(children), container)
   }
 
-  function processElement(vnode: any, container: any, parentComponent: any) {
-    mountElement(vnode, container, parentComponent)
+  function processElement(
+    n1: any,
+    n2: any,
+    container: any,
+    parentComponent: any,
+  ) {
+    console.log(n1, n2)
+    if (!n1) {
+      mountElement(n2, container, parentComponent)
+    } else {
+      patchElement(n1, n2, container)
+    }
   }
 
   function mountElement(vnode: any, container: any, parentComponent: any) {
@@ -72,14 +83,24 @@ export function createRenderer(options: any) {
     hostInsert(el, container)
   }
 
+  function patchElement(n1: any, n2: any, container: any) {
+    console.log('patchElement')
+    console.log(n1, n2, container)
+  }
+
   function mountChildren(vnode: any, container: any, parentComponent: any) {
     vnode.children.forEach((v: any) => {
-      patch(v, container, parentComponent)
+      patch(null, v, container, parentComponent)
     })
   }
 
-  function processComponent(vnode: any, container: any, parentComponent: any) {
-    mountComponent(vnode, container, parentComponent)
+  function processComponent(
+    n1: any,
+    n2: any,
+    container: any,
+    parentComponent: any,
+  ) {
+    mountComponent(n2, container, parentComponent)
   }
 
   function mountComponent(vnode: any, container: any, parentComponent: any) {
@@ -90,13 +111,24 @@ export function createRenderer(options: any) {
   }
 
   function setupRenderEffect(instance: any, container: any) {
-    const { proxy } = instance
+    effect(() => {
+      const { proxy } = instance
 
-    const subTree = instance.render.call(proxy)
+      if (!instance.isMounted) {
+        const subTree = (instance.subTree = instance.render.call(proxy))
 
-    patch(subTree, container, instance)
+        patch(null, subTree, container, instance)
 
-    instance.vnode.el = subTree.el
+        instance.vnode.el = subTree.el
+        instance.isMounted = true
+      } else {
+        const subTree = instance.render.call(proxy)
+        const prevSubTree = instance.subTree
+        instance.subTree = subTree
+
+        patch(prevSubTree, subTree, container, instance)
+      }
+    })
   }
 
   return {
