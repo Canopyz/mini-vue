@@ -10,11 +10,20 @@ const insert = (child: any, parent: any) => {
   parent.appendChild(child)
 }
 
-const patchProp = (el: any, key: any, value: any) => {
+const patchProp = (el: any, key: any, prevVal: any, newVal: any) => {
   if (nativeOnRE.test(key)) {
-    el.addEventListener(key.slice(2).toLowerCase(), value)
+    if (prevVal) {
+      el.removeEventListener(key.slice(2).toLowerCase(), prevVal)
+    }
+    if (newVal) {
+      el.addEventListener(key.slice(2).toLowerCase(), newVal)
+    }
   } else {
-    el.setAttribute(key, value)
+    if (newVal == null || newVal == undefined) {
+      el.removeAttribute(key)
+    } else {
+      el.setAttribute(key, newVal)
+    }
   }
 }
 

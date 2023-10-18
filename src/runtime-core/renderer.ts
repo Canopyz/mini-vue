@@ -1,4 +1,5 @@
 import { effect } from '../reactivity'
+import { EMPTY_OBJ } from '../shared'
 import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
 import { createAppAPI } from './createApp'
@@ -51,7 +52,6 @@ export function createRenderer(options: any) {
     container: any,
     parentComponent: any,
   ) {
-    console.log(n1, n2)
     if (!n1) {
       mountElement(n2, container, parentComponent)
     } else {
@@ -67,7 +67,7 @@ export function createRenderer(options: any) {
       for (const key in vnode.props) {
         const value = vnode.props[key]
 
-        hostPatchProp(el, key, value)
+        hostPatchProp(el, key, null, value)
       }
     }
 
@@ -84,8 +84,33 @@ export function createRenderer(options: any) {
   }
 
   function patchElement(n1: any, n2: any, container: any) {
-    console.log('patchElement')
-    console.log(n1, n2, container)
+    const oldProps = n1.props || EMPTY_OBJ
+    const newProps = n2.props || EMPTY_OBJ
+
+    const el = (n2.el = n1.el)
+    patchProps(el, oldProps, newProps)
+  }
+
+  function patchProps(el: any, oldProps: any, newProps: any) {
+    if (oldProps === newProps) {
+      return
+    }
+
+    if (oldProps !== EMPTY_OBJ) {
+      for (const key in oldProps) {
+        if (!(key in newProps)) {
+          hostPatchProp(el, key, newProps[key], null)
+        }
+      }
+    }
+
+    for (const key in newProps) {
+      const prev = oldProps[key]
+      const next = newProps[key]
+      if (prev !== next) {
+        hostPatchProp(el, key, prev, next)
+      }
+    }
   }
 
   function mountChildren(vnode: any, container: any, parentComponent: any) {
