@@ -6,8 +6,8 @@ const createElement = (type: any) => {
   return document.createElement(type)
 }
 
-const insert = (child: any, parent: any) => {
-  parent.appendChild(child)
+const insert = (child: any, parent: any, anchor: any) => {
+  parent.insertBefore(child, anchor)
 }
 
 const patchProp = (el: any, key: any, prevVal: any, newVal: any) => {
@@ -35,12 +35,18 @@ const setElementText = (el: any, text: any) => {
   el.textContent = text
 }
 
+const remove = (child: any) => {
+  const parent = child.parentNode
+  parent && parent.removeChild(child)
+}
+
 const options = {
   createElement,
   insert,
   patchProp,
   createText,
   setElementText,
+  remove,
 }
 
 const renderer = createRenderer(options)

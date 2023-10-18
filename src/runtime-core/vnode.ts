@@ -11,6 +11,7 @@ export function createVNode(type: any, props?: any, children?: any) {
     children,
     shapeFlag: getShapeFlag(type),
     el: null,
+    key: props?.key,
   }
 
   if (typeof vnode.children === 'string') {
@@ -40,4 +41,8 @@ export function createTextVNode(text: string) {
 
 export function createFragment(children: any) {
   return createVNode(Fragment, {}, children)
+}
+
+export function isSameVNodeType(n1: any, n2: any) {
+  return n1.type === n2.type && n1.key === n2.key
 }

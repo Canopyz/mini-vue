@@ -6,6 +6,10 @@ import {
   inject,
   ref,
 } from '../../lib/mini-vue.esm.js'
+import TextToArray from './TextToArray.js'
+import ArrayToText from './ArrayToText.js'
+import TextToText from './TextToText.js'
+import ArrayToArray from './ArrayToArray.js'
 
 export const App = {
   setup() {
@@ -79,6 +83,10 @@ export const App = {
           },
           'changeProps - key 在新的里面没有了 - 删除',
         ),
+
+        // h(TextToText, null, null),
+        // h(ArrayToText, null, null),
+        h(ArrayToArray, null, null),
       ],
     )
   },
