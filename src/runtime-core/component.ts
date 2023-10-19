@@ -17,9 +17,13 @@ export function createComponentInstance(vnode: any, parent: any) {
     subTree: null,
     slots: {},
     provides: parent?.provides ?? {},
+    next: null,
+    update: null,
   }
 
   component.emit = emit.bind(null, component) as any
+
+  vnode.component = component
 
   return component
 }

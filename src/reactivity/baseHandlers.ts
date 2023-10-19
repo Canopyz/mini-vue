@@ -9,8 +9,6 @@ const setter = createSetter()
 
 function createGetter(isReadonly = false, isShallow = false) {
   return function get(target, key) {
-    const res = Reflect.get(target, key)
-
     if (key === ReactiveFlags.REACTIVE) {
       return !isReadonly
     } else if (key === ReactiveFlags.READONLY) {
@@ -21,6 +19,7 @@ function createGetter(isReadonly = false, isShallow = false) {
       track(target, key)
     }
 
+    const res = Reflect.get(target, key)
     if (!isShallow && isObject(res)) {
       return isReadonly ? readonly(res) : reactive(res)
     }

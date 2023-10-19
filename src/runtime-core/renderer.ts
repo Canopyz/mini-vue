@@ -2,6 +2,7 @@ import { effect } from '../reactivity'
 import { EMPTY_OBJ } from '../shared'
 import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
+import { shouldUpdateComponent } from './componentUpdateUtils'
 import { createAppAPI } from './createApp'
 import { Fragment, Text, isSameVNodeType } from './vnode'
 
@@ -332,7 +333,22 @@ export function createRenderer(options: any) {
     parentComponent: any,
     anchor,
   ) {
-    mountComponent(n2, container, parentComponent, anchor)
+    if (!n1) {
+      mountComponent(n2, container, parentComponent, anchor)
+    } else {
+      updateComponent(n1, n2)
+    }
+  }
+
+  function updateComponent(n1: any, n2: any) {
+    const instance = (n2.component = n1.component)
+    if (shouldUpdateComponent(n1, n2)) {
+      instance.next = n2
+      instance.update()
+    } else {
+      n2.el = n1.el
+      instance.vnode = n2
+    }
   }
 
   function mountComponent(
@@ -348,7 +364,7 @@ export function createRenderer(options: any) {
   }
 
   function setupRenderEffect(instance: any, container: any, anchor) {
-    effect(() => {
+    instance.update = effect(() => {
       const { proxy } = instance
 
       if (!instance.isMounted) {
@@ -359,6 +375,13 @@ export function createRenderer(options: any) {
         instance.vnode.el = subTree.el
         instance.isMounted = true
       } else {
+        const { next, vnode } = instance
+        if (next) {
+          next.el = vnode.el
+
+          updateComponentPreRender(instance, next)
+        }
+
         const subTree = instance.render.call(proxy)
         const prevSubTree = instance.subTree
         instance.subTree = subTree
@@ -366,6 +389,13 @@ export function createRenderer(options: any) {
         patch(prevSubTree, subTree, container, instance, anchor)
       }
     })
+  }
+
+  function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode
+    instance.next = null
+
+    instance.props = nextVNode.props
   }
 
   return {
