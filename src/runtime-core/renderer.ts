@@ -4,6 +4,7 @@ import { ShapeFlags } from '../shared/ShapeFlags'
 import { createComponentInstance, setupComponent } from './component'
 import { shouldUpdateComponent } from './componentUpdateUtils'
 import { createAppAPI } from './createApp'
+import { queueJob } from './scheduler'
 import { Fragment, Text, isSameVNodeType } from './vnode'
 
 export function createRenderer(options: any) {
@@ -364,37 +365,42 @@ export function createRenderer(options: any) {
   }
 
   function setupRenderEffect(instance: any, container: any, anchor) {
-    instance.update = effect(() => {
-      const { proxy } = instance
+    instance.update = effect(
+      () => {
+        const { proxy } = instance
 
-      if (!instance.isMounted) {
-        const subTree = (instance.subTree = instance.render.call(proxy))
+        if (!instance.isMounted) {
+          const subTree = (instance.subTree = instance.render.call(proxy))
 
-        patch(null, subTree, container, instance, anchor)
+          patch(null, subTree, container, instance, anchor)
 
-        instance.vnode.el = subTree.el
-        instance.isMounted = true
-      } else {
-        const { next, vnode } = instance
-        if (next) {
-          next.el = vnode.el
+          instance.vnode.el = subTree.el
+          instance.isMounted = true
+        } else {
+          const { next, vnode } = instance
+          if (next) {
+            next.el = vnode.el
+            updateComponentPreRender(instance, next)
+          }
 
-          updateComponentPreRender(instance, next)
+          const subTree = instance.render.call(proxy)
+          const prevSubTree = instance.subTree
+          instance.subTree = subTree
+
+          patch(prevSubTree, subTree, container, instance, anchor)
         }
-
-        const subTree = instance.render.call(proxy)
-        const prevSubTree = instance.subTree
-        instance.subTree = subTree
-
-        patch(prevSubTree, subTree, container, instance, anchor)
-      }
-    })
+      },
+      {
+        scheduler: () => {
+          queueJob(instance.update)
+        },
+      },
+    )
   }
 
   function updateComponentPreRender(instance, nextVNode) {
     instance.vnode = nextVNode
     instance.next = null
-
     instance.props = nextVNode.props
   }
 
