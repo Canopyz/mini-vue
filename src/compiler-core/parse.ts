@@ -1,4 +1,4 @@
-import { NodeTypes } from './ast'
+import { NodeTypes, TagType } from './ast'
 
 export const baseParse = (content: string) => {
   const context = createParserContext(content)
@@ -10,19 +10,62 @@ function parseChildren(context) {
   const nodes: any[] = []
 
   while (!isEnd(context)) {
-    const node = parseNode(context)
+    let node = parseNode(context)
 
-    if (node) {
-      nodes.push(node)
+    if (!node) {
+      node = parseText(context)
     }
+
+    nodes.push(node)
   }
 
   return nodes
 }
 
+function parseText(context) {
+  const content = parseTextData(context, context.source.length)
+  return {
+    type: NodeTypes.TEXT,
+    content,
+  }
+}
+
+function parseTextData(context, length) {
+  const content = context.source.slice(0, length)
+  advanceBy(context, length)
+  return content
+}
+
 function parseNode(context) {
-  if (context.source.startsWith('{{')) {
+  const s = context.source
+  if (s.startsWith('{{')) {
     return parseInterpolation(context)
+  } else if (s.startsWith('<')) {
+    if (/[a-z]/i.test(s[1])) {
+      return parseElement(context)
+    }
+  }
+}
+
+function parseElement(context) {
+  const element = parseTag(context, TagType.START)
+
+  parseTag(context, TagType.END)
+
+  return element
+}
+
+function parseTag(context, type) {
+  const match: any = /^<\/?([a-z]*)>/i.exec(context.source)
+  const tag = match[1]
+
+  advanceBy(context, match[0].length)
+
+  if (type === TagType.START) {
+    return {
+      type: NodeTypes.ELEMENT,
+      tag,
+    }
   }
 }
 
@@ -30,8 +73,9 @@ function parseInterpolation(context) {
   const end = context.source.indexOf('}}')
 
   if (end !== -1) {
-    const content = context.source.slice(2, end).trim()
-    advanceBy(context, end + 2)
+    const content = parseTextData(context, end + 2)
+      .slice(2, -2)
+      .trim()
     return {
       type: NodeTypes.INTERPOLATION,
       content: {
