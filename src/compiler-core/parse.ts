@@ -3,14 +3,14 @@ import { NodeTypes, TagType } from './ast'
 export const baseParse = (content: string) => {
   const context = createParserContext(content)
 
-  return createRootNode(parseChildren(context))
+  return createRootNode(parseChildren(context, []))
 }
 
-function parseChildren(context) {
+function parseChildren(context, ancestors: any[]) {
   const nodes: any[] = []
 
-  while (!isEnd(context)) {
-    let node = parseNode(context)
+  while (!isEnd(context, ancestors)) {
+    let node = parseNode(context, ancestors)
 
     if (!node) {
       node = parseText(context)
@@ -23,7 +23,17 @@ function parseChildren(context) {
 }
 
 function parseText(context) {
-  const content = parseTextData(context, context.source.length)
+  const endToken = ['{{', '<']
+  let endIndex = context.source.length
+
+  for (const token of endToken) {
+    const index = context.source.indexOf(token)
+    if (index !== -1 && index < endIndex) {
+      endIndex = index
+    }
+  }
+
+  const content = parseTextData(context, endIndex)
   return {
     type: NodeTypes.TEXT,
     content,
@@ -36,21 +46,29 @@ function parseTextData(context, length) {
   return content
 }
 
-function parseNode(context) {
+function parseNode(context, ancestors: any[]) {
   const s = context.source
   if (s.startsWith('{{')) {
     return parseInterpolation(context)
   } else if (s.startsWith('<')) {
     if (/[a-z]/i.test(s[1])) {
-      return parseElement(context)
+      return parseElement(context, ancestors)
     }
   }
 }
 
-function parseElement(context) {
-  const element = parseTag(context, TagType.START)
+function parseElement(context, ancestors: any[]) {
+  const element: any = parseTag(context, TagType.START)
+  ancestors.push(element)
 
-  parseTag(context, TagType.END)
+  element.children = parseChildren(context, ancestors)
+  ancestors.pop()
+
+  if (startsWithEndTagOpen(context.source, element.tag)) {
+    parseTag(context, TagType.END)
+  } else {
+    throw new Error(`missing end tag ${element.tag})}`)
+  }
 
   return element
 }
@@ -102,6 +120,24 @@ function advanceBy(context, length) {
   context.source = context.source.slice(length)
 }
 
-function isEnd(context) {
-  return context.source.length === 0
+function isEnd(context, ancestors: any[]) {
+  if (context.source.length === 0) {
+    return true
+  }
+
+  for (let i = ancestors.length - 1; i >= 0; i--) {
+    if (startsWithEndTagOpen(context.source, ancestors[i].tag)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function startsWithEndTagOpen(source: any, tag: any) {
+  return (
+    source.startsWith(`</`) &&
+    source.substr(2, tag.length).toLowerCase() === tag.toLowerCase() &&
+    /[\t\r\n\f />]/.test(source[2 + tag.length] || '>')
+  )
 }
