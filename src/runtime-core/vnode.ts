@@ -4,6 +4,8 @@ import { isObject } from '../shared/index'
 export const Fragment = Symbol('Fragment')
 export const Text = Symbol('Text')
 
+export { createVNode as createElementVNode }
+
 export function createVNode(type: any, props?: any, children?: any) {
   const vnode = {
     type,
