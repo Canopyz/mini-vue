@@ -112,6 +112,7 @@ function createParserContext(content: string) {
 
 function createRootNode(children: any[]) {
   return {
+    type: NodeTypes.ROOT,
     children,
   }
 }
