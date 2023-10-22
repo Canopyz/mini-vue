@@ -1,4 +1,4 @@
-import { ref } from '../../lib/mini-vue.esm.js'
+import { ref } from '../../packages/vue/dist/xuans-mini-vue.esm.js'
 
 export const App = {
   name: 'App',
