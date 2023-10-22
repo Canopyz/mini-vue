@@ -10,7 +10,7 @@ export function isTracking() {
 export class ReactiveEffect {
   deps: Set<ReactiveEffect>[] = []
   private active = true
-  private onStop?: () => void
+  onStop?: () => void
 
   constructor(
     private fn: Function,
